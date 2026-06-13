@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AirBridge</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span>AirBridge</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" title="Toggle dark mode" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="historyBtn" title="Transfer history" aria-label="History">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+  <!-- Connection panel -->
+    <section class="card connection-card">
+      <div class="connection-info">
+        <h2>Share on your network</h2>
+        <p class="server-url" id="serverUrl">Connecting...</p>
+        <p class="hint">Open this URL on any device on the same Wi-Fi</p>
+      </div>
+      <div class="qr-section">
+        <img id="qrCode" src="/api/qr" alt="QR Code" class="qr-image">
+        <button class="btn btn-secondary btn-sm" id="scanQrBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/>
+            <rect x="7" y="14" width="3" height="3"/><path d="M14 14h3v3"/>
+          </svg>
+          Scan QR
+        </button>
+      </div>
+    </section>
+
+    <!-- Connected devices -->
+    <section class="card devices-card">
+      <div class="card-header">
+        <h3>Nearby Devices</h3>
+        <span class="badge" id="deviceCount">0</span>
+      </div>
+      <ul class="device-list" id="deviceList">
+        <li class="device-item empty">No devices connected yet</li>
+      </ul>
+    </section>
+
+    <!-- Upload area -->
+    <section class="card upload-card">
+      <div class="card-header">
+        <h3>Send Files</h3>
+      </div>
+
+      <div class="upload-options">
+        <label class="option-toggle">
+          <input type="checkbox" id="encryptToggle">
+          <span>End-to-end encrypt</span>
+        </label>
+        <div class="password-field" id="passwordField">
+          <input type="password" id="uploadPassword" placeholder="Optional password protection" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-content">
+          <div class="drop-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <p class="drop-text">Drag & drop files here</p>
+          <p class="drop-subtext">or tap to browse</p>
+          <p class="drop-limit" id="maxSizeHint">Max 100 MB per file</p>
+        </div>
+        <input type="file" id="fileInput" multiple hidden>
+      </div>
+
+      <div class="upload-progress-list" id="uploadProgressList"></div>
+    </section>
+
+    <!-- File list -->
+    <section class="card files-card">
+      <div class="card-header">
+        <h3>Available Files</h3>
+        <button class="btn-icon-sm" id="refreshFiles" title="Refresh" aria-label="Refresh files">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+      </div>
+      <ul class="file-list" id="fileList">
+        <li class="file-item empty">No files yet — send something!</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Password modal for download -->
+  <div class="modal" id="passwordModal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3>Password Required</h3>
+      <p>This file is password protected.</p>
+      <input type="password" id="downloadPassword" placeholder="Enter password" autocomplete="off">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelPassword">Cancel</button>
+        <button class="btn btn-primary" id="confirmPassword">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decryption key modal (E2E) -->
+  <div class="modal" id="decryptModal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3>Decryption Key</h3>
+      <p>Paste the encryption key shared by the sender.</p>
+      <input type="text" id="decryptKey" placeholder="Base64 encryption key" autocomplete="off">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelDecrypt">Cancel</button>
+        <button class="btn btn-primary" id="confirmDecrypt">Decrypt & Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Encryption key share modal -->
+  <div class="modal" id="keyShareModal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3>Share Encryption Key</h3>
+      <p>Share this key with the recipient so they can decrypt the file.</p>
+      <textarea id="sharedKey" readonly rows="3"></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="copyKeyBtn">Copy Key</button>
+        <button class="btn btn-secondary" id="closeKeyModal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Scanner modal -->
+  <div class="modal" id="scannerModal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-lg">
+      <h3>Scan QR Code</h3>
+      <div id="qrReader"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeScanner">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History modal -->
+  <div class="modal" id="historyModal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-lg">
+      <h3>Transfer History</h3>
+      <ul class="history-list" id="historyList"></ul>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="closeHistory">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
